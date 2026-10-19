@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src 'none'; connect-src 'none'; form-action 'none'; base-uri 'none'">
+<meta name="referrer" content="no-referrer">
+<title>Operating Room Record – BPH Maramag</title>
+<style>
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{margin:0;font-family:Arial,Helvetica,sans-serif;color:#000;background:#eef1f5}
+  .bar{position:sticky;top:0;z-index:5;display:flex;gap:10px;padding:10px 12px;background:#1f3b5c;box-shadow:0 2px 6px rgba(0,0,0,.25)}
+  .bar button{flex:1;min-height:52px;font-size:18px;font-weight:bold;border:0;border-radius:10px;cursor:pointer}
+  #btnPrint{background:#2e9d4f;color:#fff}
+  #btnClear{background:#fff;color:#b3261e}
+  .note{max-width:820px;margin:10px auto 0;padding:0 14px;font-size:14px;color:#445}
+  .sheet{max-width:820px;margin:10px auto 40px;background:#fff;padding:18px 16px 28px;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.15)}
+  .hdr{text-align:center;margin-bottom:14px}
+  .hdr .h1{font-weight:bold;font-size:17px}
+  .hdr .h2{font-size:14px}
+  .hdr .h3{font-weight:bold;font-size:15px;margin-top:10px;letter-spacing:.3px}
+  .row{display:flex;flex-wrap:wrap;gap:6px 18px;margin:0 0 10px}
+  .f{display:flex;flex-direction:column;flex:1 1 100%;min-width:0}
+  .f.s{flex:1 1 40%}
+  label,.lbl{font-size:15px;font-weight:bold;margin-bottom:4px}
+  input[type=text]{width:100%;font:inherit;font-size:18px;padding:10px;min-height:48px;border:1px solid #9aa4b1;border-radius:8px;background:#fff;color:#000}
+  textarea{width:100%;font:inherit;font-size:18px;padding:10px;border:1px solid #9aa4b1;border-radius:8px;resize:vertical;min-height:110px;overflow:hidden;color:#000}
+  textarea.big{min-height:170px}
+  input:focus,textarea:focus{outline:3px solid #7fb2ff;border-color:#2b6cd6}
+  .blk{margin:4px 0 14px}
+  .mirror{display:none}
+  .choice{display:flex;gap:10px;flex-wrap:wrap}
+  .choice label{display:flex;align-items:center;gap:8px;font-weight:normal;font-size:18px;min-height:48px;padding:0 16px;border:1px solid #9aa4b1;border-radius:8px;cursor:pointer}
+  .choice input{width:24px;height:24px}
+  .tick{display:none}
+  .sig{margin-top:22px;display:flex;justify-content:flex-end}
+  .sig .inner{width:100%;max-width:380px}
+  .sig .cap{font-size:13px;text-align:center;margin-top:4px}
+  @media (min-width:700px){
+    .f.m{flex:1 1 45%}
+    .f.xs{flex:1 1 20%}
+  }
+
+  /* ---------- PRINT: mimic the paper form ---------- */
+  @page{size:letter portrait;margin:0.45in 0.6in}
+  @media print{
+    body{background:#fff;font-size:10.5pt}
+    .bar,.note{display:none!important}
+    .sheet{max-width:none;margin:0;padding:0;box-shadow:none;border-radius:0}
+    .hdr{margin-bottom:10pt}
+    .hdr .h1{font-size:11.5pt}
+    .hdr .h2{font-size:9.5pt}
+    .hdr .h3{font-size:9.5pt;margin-top:8pt}
+    .row{flex-wrap:nowrap;gap:0 12pt;margin:0 0 3pt}
+    .f{flex-direction:row;align-items:flex-end;flex:1 1 auto}
+    label,.lbl{font-size:10pt;font-weight:normal;margin:0 6pt 0 0;white-space:nowrap}
+    input[type=text]{flex:1;min-width:0;min-height:0;height:15pt;padding:0 2pt;font-size:10.5pt;border:0;border-bottom:1px solid #000;border-radius:0;background:transparent}
+    input::placeholder{color:transparent}
+    textarea{display:none}
+    .mirror{display:block;white-space:pre-wrap;word-wrap:break-word;font-size:10.5pt;line-height:1.35;padding:3pt 0 0 0}
+    .blk{margin:0 0 6pt}
+    .r2{margin-bottom:10pt!important}
+    .blk .lbl{display:block;margin:0}
+    #m_pre,#m_post{min-height:1.25in}
+    #m_title{min-height:0.75in}
+    #m_find{min-height:2.1in}
+    /* row widths like paper */
+    .r1 .name{flex:4.2} .r1 .age{flex:1.3} .r1 .sex{flex:1.4} .r1 .cs{flex:1.3}
+    .r2 .ward{flex:2.4} .r2 .bed{flex:2.2} .r2 .hosp{flex:2.4}
+    .grid2{display:flex;gap:0 22pt}
+    .grid2 .col{flex:1;display:flex;flex-direction:column}
+    .grid2 .row{margin:0 0 7pt}
+    .grid2 label{min-width:0}
+    .spacer{height:15pt;margin:0 0 7pt}
+    .titlerow{display:flex;align-items:flex-end;gap:0 24pt}
+    .titlerow .lbl{width:auto}
+    .titlerow .rvs{flex:0 0 2.4in}
+    .choice{display:none}
+    .tick{display:inline-block;width:0.9in;border-bottom:1px solid #000;height:13pt;text-align:center;font-weight:bold;margin:0 4pt 0 0}
+    .tissue{display:flex;align-items:flex-end;gap:0 6pt;margin:4pt 0 8pt}
+    .tissue .opt{white-space:nowrap;margin-right:10pt}
+    .tissue .spec{flex:1}
+    .sig{margin-top:10pt}
+    .sig .inner{width:3.3in;display:flex;flex-wrap:wrap;align-items:flex-end}
+    .sig .inner label{margin-right:10pt}
+    .sig .inner input{flex:1}
+    .sig .cap{width:100%;padding-left:0.95in;font-size:9pt;margin-top:1pt}
+  }
+  @media screen{
+    .grid2 .spacer{display:none}
+  }
+</style>
+</head>
+<body>
+<div class="bar">
+  <button type="button" id="btnPrint">🖨 Print</button>
+  <button type="button" id="btnClear">Clear form</button>
+</div>
+<p class="note">Fill in the fields, then tap Print. Nothing is saved: the form is blank again when you refresh or close this page.</p>
+
+<form class="sheet" id="orform" autocomplete="off" onsubmit="return false">
+  <div class="hdr">
+    <div class="h1">BUKIDNON PROVINCIAL HOSPITAL OF MARAMAG</div>
+    <div class="h2">Maramag, Bukidnon</div>
+    <div class="h3">OPERATING ROOM RECORD</div>
+  </div>
+
+  <div class="row r1">
+    <div class="f name"><label for="name">Name:</label><input type="text" id="name"></div>
+    <div class="f s xs age"><label for="age">Age:</label><input type="text" id="age" inputmode="numeric"></div>
+    <div class="f s xs sex"><label for="sex">Sex:</label><input type="text" id="sex"></div>
+    <div class="f s xs cs"><label for="cs">C. S.:</label><input type="text" id="cs"></div>
+  </div>
+  <div class="row r2">
+    <div class="f m ward"><label for="ward">Ward/Room:</label><input type="text" id="ward"></div>
+    <div class="f s bed"><label for="bed">Bed Number:</label><input type="text" id="bed"></div>
+    <div class="f s hosp"><label for="hosp">Hospital Number:</label><input type="text" id="hosp"></div>
+  </div>
+
+  <div class="blk">
+    <label class="lbl" for="pre">PREOPERATIVE DIAGNOSIS:</label>
+    <textarea id="pre" data-m="m_pre"></textarea><div class="mirror" id="m_pre"></div>
+  </div>
+  <div class="blk">
+    <label class="lbl" for="post">POST-OPERATIVE DIAGNOSIS:</label>
+    <textarea id="post" data-m="m_post"></textarea><div class="mirror" id="m_post"></div>
+  </div>
+
+  <div class="grid2">
+    <div class="col">
+      <div class="row"><div class="f"><label for="surgeon">Surgeon:</label><input type="text" id="surgeon"></div></div>
+      <div class="row"><div class="f"><label for="anes">Anesthesiologist:</label><input type="text" id="anes"></div></div>
+      <div class="spacer"></div>
+      <div class="row"><div class="f"><label for="opdate">Operation Date:</label><input type="text" id="opdate"></div></div>
+    </div>
+    <div class="col">
+      <div class="row"><div class="f"><label for="assist">Assistant:</label><input type="text" id="assist"></div></div>
+      <div class="row"><div class="f"><label for="tab">Time Anesthesia Began:</label><input type="text" id="tab"></div></div>
+      <div class="row"><div class="f"><label for="tae">Time Anesthesia Ended:</label><input type="text" id="tae"></div></div>
+      <div class="row"><div class="f"><label for="tob">Time Operation Began:</label><input type="text" id="tob"></div></div>
+      <div class="row"><div class="f"><label for="toe">Time Operation Ended:</label><input type="text" id="toe"></div></div>
+    </div>
+  </div>
+
+  <div class="blk">
+    <div class="titlerow row">
+      <label class="lbl" for="title">TITLE OF OPERATION PERFORMED:</label>
+      <div class="f s rvs"><label for="rvs">RVS Code:</label><input type="text" id="rvs"></div>
+    </div>
+    <textarea id="title" data-m="m_title"></textarea><div class="mirror" id="m_title"></div>
+  </div>
+
+  <div class="blk">
+    <div class="tissue">
+      <span class="lbl">Tissue to laboratory</span>
+      <span class="tick" id="tk_yes"></span><span class="opt">Yes</span>
+      <span class="tick" id="tk_no"></span><span class="opt">No</span>
+      <div class="f spec"><label for="spec">Specimen (if any)</label><input type="text" id="spec"></div>
+    </div>
+    <div class="choice" role="radiogroup" aria-label="Tissue to laboratory">
+      <label><input type="radio" name="tissue" value="yes"> Yes</label>
+      <label><input type="radio" name="tissue" value="no"> No</label>
+    </div>
+  </div>
+
+  <div class="blk">
+    <label class="lbl" for="find">Description of findings intra operatively:</label>
+    <textarea id="find" class="big" data-m="m_find"></textarea><div class="mirror" id="m_find"></div>
+  </div>
+
+  <div class="sig">
+    <div class="inner">
+      <label for="sig">SURGEON:</label><input type="text" id="sig">
+      <div class="cap">Signature over printed name</div>
+    </div>
+  </div>
+</form>
+
+<script>
+(function(){
+  'use strict';
+  var form = document.getElementById('orform');
+  var tas = form.querySelectorAll('textarea');
+
+  function grow(t){ t.style.height = 'auto'; t.style.height = t.scrollHeight + 'px'; }
+  function sync(){
+    for (var i = 0; i < tas.length; i++){
+      document.getElementById(tas[i].getAttribute('data-m')).textContent = tas[i].value;
+    }
+    var v = form.querySelector('input[name=tissue]:checked');
+    document.getElementById('tk_yes').textContent = (v && v.value === 'yes') ? '\u2713' : '';
+    document.getElementById('tk_no').textContent  = (v && v.value === 'no')  ? '\u2713' : '';
+  }
+  function clearAll(){
+    form.reset();
+    var ins = form.querySelectorAll('input[type=text]');
+    for (var i = 0; i < ins.length; i++) ins[i].value = '';
+    for (var j = 0; j < tas.length; j++){ tas[j].value = ''; tas[j].style.height = ''; }
+    var rs = form.querySelectorAll('input[type=radio]');
+    for (var k = 0; k < rs.length; k++) rs[k].checked = false;
+    sync();
+  }
+
+  form.addEventListener('input', function(e){
+    if (e.target.tagName === 'TEXTAREA') grow(e.target);
+    sync();
+  });
+  form.addEventListener('change', sync);
+  document.getElementById('btnPrint').addEventListener('click', function(){ sync(); window.print(); });
+  document.getElementById('btnClear').addEventListener('click', function(){
+    if (confirm('Clear all fields?')) { clearAll(); window.scrollTo(0, 0); }
+  });
+  window.addEventListener('beforeprint', sync);
+  // Always start blank, even if the browser tries to restore old values.
+  window.addEventListener('pageshow', clearAll);
+  clearAll();
+})();
+</script>
+</body>
+</html>
