@@ -50,13 +50,18 @@
   .spacer{display:none}
   #ormeasure{position:absolute;left:-30000px;top:0;width:7.0in;visibility:hidden;pointer-events:none;overflow:hidden;height:0}
   #ormeasure .sheet{max-height:none!important;overflow:visible!important}
-  @page{size:letter portrait;margin:0.45in 0.6in}
+  /* Phones may ignore these margins and add ~0.5in + header/footer lines;
+     the sheet is therefore capped at 7.0in x 9.0in, which fits either way. */
+  @page{size:letter;margin:0.4in}
   @media print{
-    html,body{margin:0!important;padding:0!important;background:#fff!important;height:auto!important}
-    .bar,.note,#ormeasure{display:none!important}
+    html,body{margin:0!important;padding:0!important;border:0!important;background:#fff!important;height:auto!important;min-height:0!important;max-height:none!important;overflow:visible!important}
+    /* print ONLY the sheet: hide toolbar, note, measuring copy, scripts, everything else */
+    body > *:not(#orwrap), .bar, .note, #ormeasure, script, style{display:none!important}
+    #orwrap textarea, #orwrap .choice{display:none!important}
+    #orwrap{display:block!important;margin:0!important;padding:0!important;height:auto!important;page-break-inside:avoid;break-inside:avoid;page-break-after:avoid;break-after:avoid}
     /* last-resort guard: never spill onto a 2nd page */
-    #orwrap .sheet{max-height:9.9in;overflow:hidden;page-break-inside:avoid;break-inside:avoid;page-break-after:avoid;break-after:avoid}
-    #orwrap{page-break-inside:avoid;break-inside:avoid}
+    /* hard cap: one fixed-height sheet, nothing can flow past it */
+    #orwrap .sheet{height:9.0in!important;max-height:9.0in!important;overflow:hidden!important;position:relative;page-break-before:avoid;break-before:avoid;page-break-inside:avoid;break-inside:avoid;page-break-after:avoid;break-after:avoid}
   #orwrap{--k:1;--t:1;--lh:1.35;--cols:1;--mh:1}
   #orwrap .sheet{width:7.0in;max-width:none;margin:0 auto;padding:0;box-shadow:none;border-radius:0;background:#fff;font-size:calc(10.5pt*var(--k))}
   #orwrap .hdr{margin-bottom:calc(10pt*var(--k))}
@@ -247,7 +252,7 @@
   /* ---- one-page fitting ---------------------------------------------- */
   var meas = document.getElementById('ormeasure');
   var root = document.getElementById('orwrap');
-  var MAXH = 9.75 * 96;           // usable page height in CSS px (letter, with slack for A4 / Safari)
+  var MAXH = 8.95 * 96;           // target sheet height in CSS px: fits Letter even with ~0.5in phone margins + header/footer (≈9.4in usable); hard cap in print is 9.0in
   var VARS = ['--k','--t','--lh','--cols','--mh'];
   function setVars(el, c){
     el.style.setProperty('--k', c.k); el.style.setProperty('--t', c.t);
