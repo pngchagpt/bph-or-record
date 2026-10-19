@@ -43,54 +43,101 @@
     .f.xs{flex:1 1 20%}
   }
 
-  /* ---------- PRINT: mimic the paper form ---------- */
+  /* ---------- PRINT: mimic the paper form, always ONE page ----------
+     The same rules are applied (a) for real printing inside #orwrap and
+     (b) on screen inside the hidden #ormeasure copy, which JS uses to find
+     how much to shrink long text so the sheet fits on a single page. */
+  .spacer{display:none}
+  #ormeasure{position:absolute;left:-30000px;top:0;width:7.0in;visibility:hidden;pointer-events:none;overflow:hidden;height:0}
+  #ormeasure .sheet{max-height:none!important;overflow:visible!important}
   @page{size:letter portrait;margin:0.45in 0.6in}
   @media print{
-    body{background:#fff;font-size:10.5pt}
-    .bar,.note{display:none!important}
-    .sheet{max-width:none;margin:0;padding:0;box-shadow:none;border-radius:0}
-    .hdr{margin-bottom:10pt}
-    .hdr .h1{font-size:11.5pt}
-    .hdr .h2{font-size:9.5pt}
-    .hdr .h3{font-size:9.5pt;margin-top:8pt}
-    .row{flex-wrap:nowrap;gap:0 12pt;margin:0 0 3pt}
-    .f{flex-direction:row;align-items:flex-end;flex:1 1 auto}
-    label,.lbl{font-size:10pt;font-weight:normal;margin:0 6pt 0 0;white-space:nowrap}
-    input[type=text]{flex:1;min-width:0;min-height:0;height:15pt;padding:0 2pt;font-size:10.5pt;border:0;border-bottom:1px solid #000;border-radius:0;background:transparent}
-    input::placeholder{color:transparent}
-    textarea{display:none}
-    .mirror{display:block;white-space:pre-wrap;word-wrap:break-word;font-size:10.5pt;line-height:1.35;padding:3pt 0 0 0}
-    .blk{margin:0 0 6pt}
-    .r2{margin-bottom:10pt!important}
-    .blk .lbl{display:block;margin:0}
-    #m_pre,#m_post{min-height:1.25in}
-    #m_title{min-height:0.75in}
-    #m_find{min-height:2.1in}
-    /* row widths like paper */
-    .r1 .name{flex:4.2} .r1 .age{flex:1.3} .r1 .sex{flex:1.4} .r1 .cs{flex:1.3}
-    .r2 .ward{flex:2.4} .r2 .bed{flex:2.2} .r2 .hosp{flex:2.4}
-    .grid2{display:flex;gap:0 22pt}
-    .grid2 .col{flex:1;display:flex;flex-direction:column}
-    .grid2 .row{margin:0 0 7pt}
-    .grid2 label{min-width:0}
-    .spacer{height:15pt;margin:0 0 7pt}
-    .titlerow{display:flex;align-items:flex-end;gap:0 24pt}
-    .titlerow .lbl{width:auto}
-    .titlerow .rvs{flex:0 0 2.4in}
-    .choice{display:none}
-    .tick{display:inline-block;width:0.9in;border-bottom:1px solid #000;height:13pt;text-align:center;font-weight:bold;margin:0 4pt 0 0}
-    .tissue{display:flex;align-items:flex-end;gap:0 6pt;margin:4pt 0 8pt}
-    .tissue .opt{white-space:nowrap;margin-right:10pt}
-    .tissue .spec{flex:1}
-    .sig{margin-top:10pt}
-    .sig .inner{width:3.3in;display:flex;flex-wrap:wrap;align-items:flex-end}
-    .sig .inner label{margin-right:10pt}
-    .sig .inner input{flex:1}
-    .sig .cap{width:100%;padding-left:0.95in;font-size:9pt;margin-top:1pt}
+    html,body{margin:0!important;padding:0!important;background:#fff!important;height:auto!important}
+    .bar,.note,#ormeasure{display:none!important}
+    /* last-resort guard: never spill onto a 2nd page */
+    #orwrap .sheet{max-height:9.9in;overflow:hidden;page-break-inside:avoid;break-inside:avoid;page-break-after:avoid;break-after:avoid}
+    #orwrap{page-break-inside:avoid;break-inside:avoid}
+  #orwrap{--k:1;--t:1;--lh:1.35;--cols:1;--mh:1}
+  #orwrap .sheet{width:7.0in;max-width:none;margin:0 auto;padding:0;box-shadow:none;border-radius:0;background:#fff;font-size:calc(10.5pt*var(--k))}
+  #orwrap .hdr{margin-bottom:calc(10pt*var(--k))}
+  #orwrap .hdr .h1{font-size:calc(11.5pt*var(--k))}
+  #orwrap .hdr .h2{font-size:calc(9.5pt*var(--k))}
+  #orwrap .hdr .h3{font-size:calc(9.5pt*var(--k));margin-top:calc(8pt*var(--k))}
+  #orwrap .row{flex-wrap:nowrap;gap:0 calc(12pt*var(--k));margin:0 0 calc(3pt*var(--k))}
+  #orwrap .f{flex-direction:row;align-items:flex-end;flex:1 1 auto}
+  #orwrap label, #orwrap .lbl{font-size:calc(10pt*var(--k));font-weight:normal;margin:0 calc(6pt*var(--k)) 0 0;white-space:nowrap}
+  #orwrap input[type=text]{flex:1;min-width:0;min-height:0;height:calc(15pt*var(--k));padding:0 2pt;font-size:calc(10.5pt*var(--k));border:0;border-bottom:1px solid #000;border-radius:0;background:transparent;outline:0}
+  #orwrap input::placeholder{color:transparent}
+  #orwrap textarea{display:none}
+  #orwrap .mirror{display:block;white-space:pre-wrap;overflow-wrap:anywhere;word-wrap:break-word;font-size:calc(10.5pt*var(--k)*var(--t));line-height:var(--lh);padding:calc(3pt*var(--k)) 0 0 0}
+  #orwrap .mirror.long{column-count:var(--cols);column-gap:calc(14pt*var(--k));column-rule:1px solid #bbb}
+  #orwrap .blk{margin:0 0 calc(6pt*var(--k))}
+  #orwrap .r2{margin-bottom:calc(10pt*var(--k))!important}
+  #orwrap .blk .lbl{display:block;margin:0}
+  #orwrap .m_pre, #orwrap .m_post{min-height:calc(1.25in*var(--k)*var(--mh))}
+  #orwrap .m_title{min-height:calc(0.75in*var(--k)*var(--mh))}
+  #orwrap .m_find{min-height:calc(2.1in*var(--k)*var(--mh))}
+  #orwrap .r1 .name{flex:4.2} #orwrap .r1 .age{flex:1.3} #orwrap .r1 .sex{flex:1.4} #orwrap .r1 .cs{flex:1.3}
+  #orwrap .r2 .ward{flex:2.4} #orwrap .r2 .bed{flex:2.2} #orwrap .r2 .hosp{flex:2.4}
+  #orwrap .grid2{display:flex;gap:0 calc(22pt*var(--k))}
+  #orwrap .grid2 .col{flex:1;display:flex;flex-direction:column;min-width:0}
+  #orwrap .grid2 .row{margin:0 0 calc(7pt*var(--k))}
+  #orwrap .grid2 label{min-width:0}
+  #orwrap .spacer{display:block;height:calc(15pt*var(--k));margin:0 0 calc(7pt*var(--k))}
+  #orwrap .titlerow{display:flex;align-items:flex-end;gap:0 calc(24pt*var(--k))}
+  #orwrap .titlerow .lbl{width:auto}
+  #orwrap .titlerow .rvs{flex:0 0 calc(2.4in*var(--k))}
+  #orwrap .choice{display:none}
+  #orwrap .tick{display:inline-block;width:calc(0.9in*var(--k));border-bottom:1px solid #000;height:calc(13pt*var(--k));text-align:center;font-weight:bold;margin:0 calc(4pt*var(--k)) 0 0}
+  #orwrap .tissue{display:flex;align-items:flex-end;gap:0 calc(6pt*var(--k));margin:calc(4pt*var(--k)) 0 calc(8pt*var(--k))}
+  #orwrap .tissue .opt{white-space:nowrap;margin-right:calc(10pt*var(--k))}
+  #orwrap .tissue .spec{flex:1}
+  #orwrap .sig{margin-top:calc(10pt*var(--k))}
+  #orwrap .sig .inner{width:calc(3.3in*var(--k));max-width:none;display:flex;flex-wrap:wrap;align-items:flex-end}
+  #orwrap .sig .inner label{margin-right:calc(10pt*var(--k))}
+  #orwrap .sig .inner input{flex:1}
+  #orwrap .sig .cap{width:100%;padding-left:calc(0.95in*var(--k));font-size:calc(9pt*var(--k));margin-top:1pt}
   }
-  @media screen{
-    .grid2 .spacer{display:none}
-  }
+  #ormeasure{--k:1;--t:1;--lh:1.35;--cols:1;--mh:1}
+  #ormeasure .sheet{width:7.0in;max-width:none;margin:0 auto;padding:0;box-shadow:none;border-radius:0;background:#fff;font-size:calc(10.5pt*var(--k))}
+  #ormeasure .hdr{margin-bottom:calc(10pt*var(--k))}
+  #ormeasure .hdr .h1{font-size:calc(11.5pt*var(--k))}
+  #ormeasure .hdr .h2{font-size:calc(9.5pt*var(--k))}
+  #ormeasure .hdr .h3{font-size:calc(9.5pt*var(--k));margin-top:calc(8pt*var(--k))}
+  #ormeasure .row{flex-wrap:nowrap;gap:0 calc(12pt*var(--k));margin:0 0 calc(3pt*var(--k))}
+  #ormeasure .f{flex-direction:row;align-items:flex-end;flex:1 1 auto}
+  #ormeasure label, #ormeasure .lbl{font-size:calc(10pt*var(--k));font-weight:normal;margin:0 calc(6pt*var(--k)) 0 0;white-space:nowrap}
+  #ormeasure input[type=text]{flex:1;min-width:0;min-height:0;height:calc(15pt*var(--k));padding:0 2pt;font-size:calc(10.5pt*var(--k));border:0;border-bottom:1px solid #000;border-radius:0;background:transparent;outline:0}
+  #ormeasure input::placeholder{color:transparent}
+  #ormeasure textarea{display:none}
+  #ormeasure .mirror{display:block;white-space:pre-wrap;overflow-wrap:anywhere;word-wrap:break-word;font-size:calc(10.5pt*var(--k)*var(--t));line-height:var(--lh);padding:calc(3pt*var(--k)) 0 0 0}
+  #ormeasure .mirror.long{column-count:var(--cols);column-gap:calc(14pt*var(--k));column-rule:1px solid #bbb}
+  #ormeasure .blk{margin:0 0 calc(6pt*var(--k))}
+  #ormeasure .r2{margin-bottom:calc(10pt*var(--k))!important}
+  #ormeasure .blk .lbl{display:block;margin:0}
+  #ormeasure .m_pre, #ormeasure .m_post{min-height:calc(1.25in*var(--k)*var(--mh))}
+  #ormeasure .m_title{min-height:calc(0.75in*var(--k)*var(--mh))}
+  #ormeasure .m_find{min-height:calc(2.1in*var(--k)*var(--mh))}
+  #ormeasure .r1 .name{flex:4.2} #ormeasure .r1 .age{flex:1.3} #ormeasure .r1 .sex{flex:1.4} #ormeasure .r1 .cs{flex:1.3}
+  #ormeasure .r2 .ward{flex:2.4} #ormeasure .r2 .bed{flex:2.2} #ormeasure .r2 .hosp{flex:2.4}
+  #ormeasure .grid2{display:flex;gap:0 calc(22pt*var(--k))}
+  #ormeasure .grid2 .col{flex:1;display:flex;flex-direction:column;min-width:0}
+  #ormeasure .grid2 .row{margin:0 0 calc(7pt*var(--k))}
+  #ormeasure .grid2 label{min-width:0}
+  #ormeasure .spacer{display:block;height:calc(15pt*var(--k));margin:0 0 calc(7pt*var(--k))}
+  #ormeasure .titlerow{display:flex;align-items:flex-end;gap:0 calc(24pt*var(--k))}
+  #ormeasure .titlerow .lbl{width:auto}
+  #ormeasure .titlerow .rvs{flex:0 0 calc(2.4in*var(--k))}
+  #ormeasure .choice{display:none}
+  #ormeasure .tick{display:inline-block;width:calc(0.9in*var(--k));border-bottom:1px solid #000;height:calc(13pt*var(--k));text-align:center;font-weight:bold;margin:0 calc(4pt*var(--k)) 0 0}
+  #ormeasure .tissue{display:flex;align-items:flex-end;gap:0 calc(6pt*var(--k));margin:calc(4pt*var(--k)) 0 calc(8pt*var(--k))}
+  #ormeasure .tissue .opt{white-space:nowrap;margin-right:calc(10pt*var(--k))}
+  #ormeasure .tissue .spec{flex:1}
+  #ormeasure .sig{margin-top:calc(10pt*var(--k))}
+  #ormeasure .sig .inner{width:calc(3.3in*var(--k));max-width:none;display:flex;flex-wrap:wrap;align-items:flex-end}
+  #ormeasure .sig .inner label{margin-right:calc(10pt*var(--k))}
+  #ormeasure .sig .inner input{flex:1}
+  #ormeasure .sig .cap{width:100%;padding-left:calc(0.95in*var(--k));font-size:calc(9pt*var(--k));margin-top:1pt}
 </style>
 </head>
 <body>
@@ -100,6 +147,7 @@
 </div>
 <p class="note">Fill in the fields, then tap Print. Nothing is saved: the form is blank again when you refresh or close this page.</p>
 
+<div id="orwrap">
 <form class="sheet" id="orform" autocomplete="off" onsubmit="return false">
   <div class="hdr">
     <div class="h1">BUKIDNON PROVINCIAL HOSPITAL OF MARAMAG</div>
@@ -121,11 +169,11 @@
 
   <div class="blk">
     <label class="lbl" for="pre">PREOPERATIVE DIAGNOSIS:</label>
-    <textarea id="pre" data-m="m_pre"></textarea><div class="mirror" id="m_pre"></div>
+    <textarea id="pre" data-m="m_pre"></textarea><div class="mirror m_pre" id="m_pre"></div>
   </div>
   <div class="blk">
     <label class="lbl" for="post">POST-OPERATIVE DIAGNOSIS:</label>
-    <textarea id="post" data-m="m_post"></textarea><div class="mirror" id="m_post"></div>
+    <textarea id="post" data-m="m_post"></textarea><div class="mirror m_post" id="m_post"></div>
   </div>
 
   <div class="grid2">
@@ -149,7 +197,7 @@
       <label class="lbl" for="title">TITLE OF OPERATION PERFORMED:</label>
       <div class="f s rvs"><label for="rvs">RVS Code:</label><input type="text" id="rvs"></div>
     </div>
-    <textarea id="title" data-m="m_title"></textarea><div class="mirror" id="m_title"></div>
+    <textarea id="title" data-m="m_title"></textarea><div class="mirror m_title" id="m_title"></div>
   </div>
 
   <div class="blk">
@@ -167,7 +215,7 @@
 
   <div class="blk">
     <label class="lbl" for="find">Description of findings intra operatively:</label>
-    <textarea id="find" class="big" data-m="m_find"></textarea><div class="mirror" id="m_find"></div>
+    <textarea id="find" class="big" data-m="m_find"></textarea><div class="mirror m_find" id="m_find"></div>
   </div>
 
   <div class="sig">
@@ -177,6 +225,8 @@
     </div>
   </div>
 </form>
+</div>
+<div id="ormeasure" aria-hidden="true"></div>
 
 <script>
 (function(){
@@ -193,6 +243,109 @@
     document.getElementById('tk_yes').textContent = (v && v.value === 'yes') ? '\u2713' : '';
     document.getElementById('tk_no').textContent  = (v && v.value === 'no')  ? '\u2713' : '';
   }
+
+  /* ---- one-page fitting ---------------------------------------------- */
+  var meas = document.getElementById('ormeasure');
+  var root = document.getElementById('orwrap');
+  var MAXH = 9.75 * 96;           // usable page height in CSS px (letter, with slack for A4 / Safari)
+  var VARS = ['--k','--t','--lh','--cols','--mh'];
+  function setVars(el, c){
+    el.style.setProperty('--k', c.k); el.style.setProperty('--t', c.t);
+    el.style.setProperty('--lh', c.lh); el.style.setProperty('--cols', c.cols);
+    el.style.setProperty('--mh', c.mh);
+  }
+  function markLong(scopeEl){
+    var ms = scopeEl.querySelectorAll('.mirror');
+    for (var i = 0; i < ms.length; i++){
+      var t = ms[i].textContent, lines = t.split('\n').length;
+      if (lines >= 6 || t.length > 350) ms[i].classList.add('long'); else ms[i].classList.remove('long');
+    }
+  }
+  var clone = null;
+  function buildClone(){
+    meas.innerHTML = '';
+    clone = form.cloneNode(true);
+    clone.removeAttribute('id');
+    var ids = clone.querySelectorAll('[id]');
+    for (var i = 0; i < ids.length; i++){ ids[i].setAttribute('data-id', ids[i].id); }
+    // drop ids so the copy never clashes with the real form
+    for (var j = 0; j < ids.length; j++){
+      var id = ids[j].getAttribute('data-id');
+      ids[j].removeAttribute('id');
+    }
+    meas.appendChild(clone);
+  }
+  function heightFor(c){ setVars(meas, c); return clone.offsetHeight; }
+  function fits(c){ return heightFor(c) <= MAXH; }
+  var lastFit = null;
+  function fit(){
+    sync();
+    // While the print layout is active the measuring copy is hidden (display:none),
+    // so keep the values worked out just before (on typing / Print tap).
+    if (lastFit && meas.offsetParent === null && getComputedStyle(meas).display === 'none') return lastFit;
+    // copy current mirror text + ticks into the measuring copy
+    if (!clone) buildClone();
+    var src = form.querySelectorAll('.mirror, .tick'), dst = clone.querySelectorAll('.mirror, .tick');
+    for (var i = 0; i < src.length; i++) dst[i].textContent = src[i].textContent;
+    markLong(form); markLong(clone);
+    // move the measuring copy into the document flow width-wise (it is absolutely positioned)
+    meas.style.height = 'auto';
+    var best = {k:1, t:1, lh:1.35, cols:1, mh:1};
+    if (!fits(best)){
+      // step 1: give up some of the empty writing space under the headings
+      var c0 = {k:1, t:1, lh:1.35, cols:1, mh:0};
+      if (fits(c0)){
+        var lo0 = 0, hi0 = 1;
+        for (var q = 0; q < 12; q++){ var m0 = (lo0 + hi0) / 2; c0.mh = m0; if (fits(c0)) lo0 = m0; else hi0 = m0; }
+        c0.mh = Math.floor(lo0 * 1000) / 1000;
+        best = c0;
+      } else best = null;
+    }
+    if (!best){
+      // step 2: shrink the long text (optionally in two columns)
+      var cand = [1, 2];
+      for (var ci = 0; ci < cand.length; ci++){
+        var lo = 0.55, hi = 1, base = {k:1, lh:1.2, cols:cand[ci], mh:0};
+        base.t = lo;
+        if (!fits(base)) continue;
+        for (var n = 0; n < 14; n++){
+          var mid = (lo + hi) / 2; base.t = mid;
+          if (fits(base)) lo = mid; else hi = mid;
+        }
+        base.t = Math.floor(lo * 1000) / 1000;
+        if (!best || base.t > best.t + 0.02) best = {k:1, t:base.t, lh:1.2, cols:base.cols, mh:0};
+      }
+      if (!best){
+        // text alone can't shrink enough: shrink the whole sheet, text at its floor
+        var bc = 1, bk = 0, cols = [1, 2];
+        for (var cj = 0; cj < cols.length; cj++){
+          var lo2 = 0.2, hi2 = 1, c2 = {t:0.55, lh:1.15, cols:cols[cj], mh:0, k:lo2};
+          if (!fits(c2)) continue;
+          for (var m = 0; m < 14; m++){
+            var mid2 = (lo2 + hi2) / 2; c2.k = mid2;
+            if (fits(c2)) lo2 = mid2; else hi2 = mid2;
+          }
+          if (lo2 > bk){ bk = lo2; bc = cols[cj]; }
+        }
+        best = {k: Math.floor((bk || 0.2) * 1000) / 1000, t:0.55, lh:1.15, cols:bc, mh:0};
+      }
+    }
+    if (best.t < 1 || best.k < 1){
+      // use any space left over (e.g. when a little more size would make lines wrap):
+      // loosen the line spacing back towards normal
+      var lo3 = best.lh, hi3 = 1.45, c3 = {k:best.k, t:best.t, cols:best.cols, mh:best.mh, lh:hi3};
+      if (fits(c3)) lo3 = hi3; else for (var r = 0; r < 10; r++){ var m3 = (lo3 + hi3) / 2; c3.lh = m3; if (fits(c3)) lo3 = m3; else hi3 = m3; }
+      best.lh = Math.floor(lo3 * 100) / 100;
+    }
+    meas.style.height = '0';
+    setVars(root, best);
+    root.setAttribute('data-fit', JSON.stringify(best));
+    lastFit = best;
+    return best;
+  }
+  var fitTimer = null;
+  function fitSoon(){ clearTimeout(fitTimer); fitTimer = setTimeout(fit, 120); }
+
   function clearAll(){
     form.reset();
     var ins = form.querySelectorAll('input[type=text]');
@@ -200,19 +353,28 @@
     for (var j = 0; j < tas.length; j++){ tas[j].value = ''; tas[j].style.height = ''; }
     var rs = form.querySelectorAll('input[type=radio]');
     for (var k = 0; k < rs.length; k++) rs[k].checked = false;
-    sync();
+    sync(); fit();
   }
 
   form.addEventListener('input', function(e){
     if (e.target.tagName === 'TEXTAREA') grow(e.target);
-    sync();
+    sync(); fitSoon();
   });
-  form.addEventListener('change', sync);
-  document.getElementById('btnPrint').addEventListener('click', function(){ sync(); window.print(); });
+  form.addEventListener('change', function(){ sync(); fit(); });
+  document.getElementById('btnPrint').addEventListener('click', function(){ fit(); window.print(); });
   document.getElementById('btnClear').addEventListener('click', function(){
     if (confirm('Clear all fields?')) { clearAll(); window.scrollTo(0, 0); }
   });
-  window.addEventListener('beforeprint', sync);
+  // Fit is kept up to date while typing, and re-checked right before printing
+  // (beforeprint for desktop/Android Chrome, matchMedia for older Safari).
+  window.addEventListener('beforeprint', fit);
+  if (window.matchMedia){
+    var mq = window.matchMedia('print');
+    var onmq = function(e){ if (e.matches) fit(); };
+    if (mq.addEventListener) mq.addEventListener('change', onmq); else if (mq.addListener) mq.addListener(onmq);
+  }
+  window.addEventListener('resize', fitSoon);
+  window.__orFit = fit;
   // Always start blank, even if the browser tries to restore old values.
   window.addEventListener('pageshow', clearAll);
   clearAll();
