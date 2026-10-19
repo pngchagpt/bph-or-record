@@ -16,6 +16,7 @@
   #btnPrint{background:#2e9d4f;color:#fff}
   #btnClear{background:#fff;color:#b3261e}
   .note{max-width:820px;margin:10px auto 0;padding:0 14px;font-size:14px;color:#445}
+  .note.save{margin-top:4px;font-size:13px;color:#2a5d34}
   .sheet{max-width:820px;margin:10px auto 40px;background:#fff;padding:18px 16px 28px;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.15)}
   .hdr{text-align:center;margin-bottom:14px}
   .hdr .h1{font-weight:bold;font-size:17px}
@@ -150,7 +151,8 @@
   <button type="button" id="btnPrint">🖨 Print</button>
   <button type="button" id="btnClear">Clear form</button>
 </div>
-<p class="note">Fill in the fields, then tap Print. Nothing is saved: the form is blank again when you refresh or close this page.</p>
+<p class="note">Fill in the fields, then tap Print.</p>
+<p class="note save" id="saveinfo">Saved on this device only — clears automatically 2 hours after last edit.</p>
 
 <div id="orwrap">
 <form class="sheet" id="orform" autocomplete="off" onsubmit="return false">
@@ -351,7 +353,68 @@
   var fitTimer = null;
   function fitSoon(){ clearTimeout(fitTimer); fitTimer = setTimeout(fit, 120); }
 
-  function clearAll(){
+  /* ---- same-device save with 2-hour expiry ------------------------------
+     Values live only in this browser's localStorage (never sent anywhere; the
+     CSP blocks all network access) and are wiped 2 h after the last edit. */
+  var KEY = 'bph-or-record:v1', TTL = 2 * 60 * 60 * 1000;
+  var info = document.getElementById('saveinfo');
+  function store(){ try { return window.localStorage; } catch (e) { return null; } }
+  function readSaved(){
+    var s = store(); if (!s) return null;
+    try { var d = JSON.parse(s.getItem(KEY) || 'null'); return (d && typeof d.lastEdited === 'number' && d.v) ? d : null; }
+    catch (e) { return null; }
+  }
+  function wipeSaved(){ var s = store(); if (s) { try { s.removeItem(KEY); } catch (e) {} } }
+  function fmt(t){ return new Date(t).toLocaleTimeString([], {hour:'numeric', minute:'2-digit'}); }
+  function showInfo(d){
+    var base = 'Saved on this device only \u2014 clears automatically 2 hours after last edit';
+    if (!store()) { info.textContent = 'This browser is not allowing saving; the form will not be kept if you leave the page.'; return; }
+    info.textContent = d ? base + ' (at ' + fmt(d.lastEdited + TTL) + ').' : base + '.';
+  }
+  function fields(){ return form.querySelectorAll('input[type=text], textarea'); }
+  function save(){
+    var s = store(); if (!s) return;
+    var v = {}, any = false, f = fields();
+    for (var i = 0; i < f.length; i++){ v[f[i].id] = f[i].value; if (f[i].value) any = true; }
+    var r = form.querySelector('input[name=tissue]:checked');
+    var d = {v: v, tissue: r ? r.value : '', lastEdited: Date.now()};
+    if (d.tissue) any = true;
+    if (!any) { wipeSaved(); showInfo(null); return; }
+    try { s.setItem(KEY, JSON.stringify(d)); } catch (e) {}
+    showInfo(d);
+  }
+  function expired(d){ return !d || (Date.now() - d.lastEdited) >= TTL || d.lastEdited > Date.now() + 60000; }
+  function restore(){
+    var d = readSaved();
+    if (d && expired(d)) { wipeSaved(); d = null; }
+    clearAll(true);
+    if (d){
+      var f = fields();
+      for (var i = 0; i < f.length; i++){
+        if (Object.prototype.hasOwnProperty.call(d.v, f[i].id)) f[i].value = String(d.v[f[i].id]);
+      }
+      var rs = form.querySelectorAll('input[name=tissue]');
+      for (var k = 0; k < rs.length; k++) rs[k].checked = (rs[k].value === d.tissue);
+      for (var j = 0; j < tas.length; j++) if (tas[j].value) grow(tas[j]);
+      sync(); fit();
+    }
+    showInfo(d);
+  }
+  function checkExpiry(){
+    var d = readSaved();
+    if (d && expired(d)) { wipeSaved(); clearAll(true); showInfo(null); }
+    else if (!d && store() && hasValues()) {
+      // saved copy was removed (e.g. cleared in another tab or by expiry elsewhere)
+      clearAll(true); showInfo(null);
+    }
+  }
+  function hasValues(){
+    var f = fields(); for (var i = 0; i < f.length; i++) if (f[i].value) return true;
+    return !!form.querySelector('input[name=tissue]:checked');
+  }
+
+  function clearAll(keepStore){
+    if (keepStore !== true) wipeSaved();
     form.reset();
     var ins = form.querySelectorAll('input[type=text]');
     for (var i = 0; i < ins.length; i++) ins[i].value = '';
@@ -359,13 +422,14 @@
     var rs = form.querySelectorAll('input[type=radio]');
     for (var k = 0; k < rs.length; k++) rs[k].checked = false;
     sync(); fit();
+    if (keepStore !== true) showInfo(null);
   }
 
   form.addEventListener('input', function(e){
     if (e.target.tagName === 'TEXTAREA') grow(e.target);
-    sync(); fitSoon();
+    sync(); fitSoon(); save();
   });
-  form.addEventListener('change', function(){ sync(); fit(); });
+  form.addEventListener('change', function(){ sync(); fit(); save(); });
   document.getElementById('btnPrint').addEventListener('click', function(){ fit(); window.print(); });
   document.getElementById('btnClear').addEventListener('click', function(){
     if (confirm('Clear all fields?')) { clearAll(); window.scrollTo(0, 0); }
@@ -380,9 +444,12 @@
   }
   window.addEventListener('resize', fitSoon);
   window.__orFit = fit;
-  // Always start blank, even if the browser tries to restore old values.
-  window.addEventListener('pageshow', clearAll);
-  clearAll();
+  // Start from the saved copy (if under 2 h old), otherwise blank. The browser's own
+  // form restore is ignored (autocomplete is off and we overwrite on every show).
+  window.addEventListener('pageshow', function(e){ if (e.persisted) restore(); });
+  document.addEventListener('visibilitychange', function(){ if (!document.hidden) checkExpiry(); });
+  setInterval(checkExpiry, 60 * 1000);
+  restore();
 })();
 </script>
 </body>
