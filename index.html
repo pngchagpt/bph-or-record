@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex, nofollow">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src 'none'; connect-src 'none'; form-action 'none'; base-uri 'none'">
 <meta name="referrer" content="no-referrer">
-<title>Operating Room Record – BPH Maramag</title>
+<title>Operating Room Record</title>
 <style>
   *{box-sizing:border-box}
   html{-webkit-text-size-adjust:100%}
@@ -39,6 +39,7 @@
   .sig{margin-top:22px;display:flex;justify-content:flex-end}
   .sig .inner{width:100%;max-width:380px}
   .sig .cap{font-size:13px;text-align:center;margin-top:4px}
+  .sig .lic{margin-top:10px}
   @media (min-width:700px){
     .f.m{flex:1 1 45%}
     .f.xs{flex:1 1 20%}
@@ -51,18 +52,23 @@
   .spacer{display:none}
   #ormeasure{position:absolute;left:-30000px;top:0;width:7.0in;visibility:hidden;pointer-events:none;overflow:hidden;height:0}
   #ormeasure .sheet{max-height:none!important;overflow:visible!important}
-  /* Phones may ignore these margins and add ~0.5in + header/footer lines;
-     the sheet is therefore capped at 7.0in x 9.0in, which fits either way. */
-  @page{size:letter;margin:0.4in}
+  /* @page margin 0 makes Chrome/Edge (desktop + Android) drop their date/title/URL
+     header and footer. The page margins are then provided by centring the sheet and
+     padding above it. Browsers that still force their own margins + header/footer
+     (e.g. iPhone Safari) leave ~7.5in x 9.4in on Letter; the sheet is capped at
+     7.0in x 9.0in with no extra padding in that case, so it still fits on one page. */
+  @page{size:letter;margin:0}
   @media print{
     html,body{margin:0!important;padding:0!important;border:0!important;background:#fff!important;height:auto!important;min-height:0!important;max-height:none!important;overflow:visible!important}
     /* print ONLY the sheet: hide toolbar, note, measuring copy, scripts, everything else */
     body > *:not(#orwrap), .bar, .note, #ormeasure, script, style{display:none!important}
     #orwrap textarea, #orwrap .choice{display:none!important}
-    #orwrap{display:block!important;margin:0!important;padding:0!important;height:auto!important;page-break-inside:avoid;break-inside:avoid;page-break-after:avoid;break-after:avoid}
+    #orwrap{display:block!important;margin:0!important;padding:0!important;height:auto!important;width:auto!important;page-break-inside:avoid;break-inside:avoid;page-break-after:avoid;break-after:avoid}
     /* last-resort guard: never spill onto a 2nd page */
+    /* full sheet available (no forced margins): give it a real top margin */
+    @media (min-height:10.3in){ #orwrap{padding-top:0.65in!important} }
     /* hard cap: one fixed-height sheet, nothing can flow past it */
-    #orwrap .sheet{height:9.0in!important;max-height:9.0in!important;overflow:hidden!important;position:relative;page-break-before:avoid;break-before:avoid;page-break-inside:avoid;break-inside:avoid;page-break-after:avoid;break-after:avoid}
+    #orwrap .sheet{margin-left:auto!important;margin-right:auto!important;height:9.0in!important;max-height:9.0in!important;overflow:hidden!important;position:relative;page-break-before:avoid;break-before:avoid;page-break-inside:avoid;break-inside:avoid;page-break-after:avoid;break-after:avoid}
   #orwrap{--k:1;--t:1;--lh:1.35;--cols:1;--mh:1}
   #orwrap .sheet{width:7.0in;max-width:none;margin:0 auto;padding:0;box-shadow:none;border-radius:0;background:#fff;font-size:calc(10.5pt*var(--k))}
   #orwrap .hdr{margin-bottom:calc(10pt*var(--k))}
@@ -103,6 +109,8 @@
   #orwrap .sig .inner label{margin-right:calc(10pt*var(--k))}
   #orwrap .sig .inner input{flex:1}
   #orwrap .sig .cap{width:100%;padding-left:calc(0.95in*var(--k));font-size:calc(9pt*var(--k));margin-top:1pt}
+  #orwrap .sig .lic{flex:1 1 100%;width:100%;margin-top:calc(7pt*var(--k))}
+  #orwrap .sig .lic input{flex:1}
   }
   #ormeasure{--k:1;--t:1;--lh:1.35;--cols:1;--mh:1}
   #ormeasure .sheet{width:7.0in;max-width:none;margin:0 auto;padding:0;box-shadow:none;border-radius:0;background:#fff;font-size:calc(10.5pt*var(--k))}
@@ -144,6 +152,8 @@
   #ormeasure .sig .inner label{margin-right:calc(10pt*var(--k))}
   #ormeasure .sig .inner input{flex:1}
   #ormeasure .sig .cap{width:100%;padding-left:calc(0.95in*var(--k));font-size:calc(9pt*var(--k));margin-top:1pt}
+  #ormeasure .sig .lic{flex:1 1 100%;width:100%;margin-top:calc(7pt*var(--k))}
+  #ormeasure .sig .lic input{flex:1}
 </style>
 </head>
 <body>
@@ -229,6 +239,7 @@
     <div class="inner">
       <label for="sig">SURGEON:</label><input type="text" id="sig">
       <div class="cap">Signature over printed name</div>
+      <div class="f lic"><label for="lic">License No.:</label><input type="text" id="lic"></div>
     </div>
   </div>
 </form>
@@ -449,6 +460,7 @@
   window.addEventListener('pageshow', function(e){ if (e.persisted) restore(); });
   document.addEventListener('visibilitychange', function(){ if (!document.hidden) checkExpiry(); });
   setInterval(checkExpiry, 60 * 1000);
+  document.title = 'Operating Room Record';
   restore();
 })();
 </script>
